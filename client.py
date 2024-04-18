@@ -1,7 +1,7 @@
 import socket
 import sys
 
-def send_request_to_server(request, host="localhost", port=53009):
+def send_request_to_server(request, host="localhost", port=5000):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
@@ -13,12 +13,9 @@ def send_request_to_server(request, host="localhost", port=53009):
         return None
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: python3 whimsi_client.py <route (e.g, localhost/hello.whimsi)>")
-        sys.exit(1)
+    # if len(sys.argv) < 2:
+    #     print("Usage: ")
+    #     sys.exit(1)
     
-    route = sys.argv[1]
-    host, file_path = route.split("/")
-
-    hello_response = send_request_to_server("HELLO")
-    print("SERVER SAYS:", hello_response)
+    for i in range(1,5):
+        print(send_request_to_server(str(i)))

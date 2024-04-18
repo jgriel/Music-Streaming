@@ -1,19 +1,25 @@
 import socket
 import threading
 
-def handle_client(conn, addr, base_path):
+def handle_client(conn, base_path):
     with conn:
         data = conn.recv(1024)
         request = data.decode().strip()
-        print(f"{addr} - {request}")
+        print(f"{request}")
 
-        command = request.split(" ")[0]
-
-        if command == "HELLO":
-            response = "WORLD"
+        match request:
+            case "1":
+                response = "GME"
+            case "2":
+                response = "to"
+            case "3":
+                response = "the"
+            case "4":
+                response = "moon"
+        
         conn.sendall(response.encode())
 
-def start_server(host='localhost', port=53009, base_path='.'):
+def start_server(host='localhost', port=5000, base_path='.'):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
@@ -21,8 +27,8 @@ def start_server(host='localhost', port=53009, base_path='.'):
 
         while True:
             conn, addr = s.accept()
-            thread = threading.Thread(target=handle_client, args=(conn, addr, base_path))
+            thread = threading.Thread(target=handle_client, args=(conn, base_path))
             thread.start()
 
 if __name__ == "__main__":
-    start_server(base_path='../whimsi/')
+    start_server(base_path='../music/')
