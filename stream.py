@@ -13,17 +13,17 @@ def split_song(song, song_name):
         end = min(num_frames_packet * (i+1), num_frames)
         packet = song[start * 1000 // song.frame_rate : end * 1000 // song.frame_rate]
 
-        if not path.exists(f"data/{song_name}_chunks"):
-            mkdir(f"data/{song_name}_chunks")
+        if not path.exists(f"data/{song_name}/{song_name}_chunks"):
+            mkdir(f"data/{song_name}/{song_name}_chunks")
 
-        f = path.join(f"data/{song_name}_chunks/{song_name}_{i}.mp3")
+        f = path.join(f"data/{song_name}/{song_name}_chunks/{song_name}_{i}.mp3")
         packet.export(f, format="mp3")
 
 if __name__ == "__main__":
     song_name = "song_2"
-    song = AudioSegment.from_mp3(f"data/{song_name}.mp3") 
+    song = AudioSegment.from_mp3(f"data/{song_name}/{song_name}.mp3") 
     split_song(song, song_name)
-    print('playing sound using pydub')
-    play(song)
+    # print('playing sound using pydub')
+    # play(song)
     
 
