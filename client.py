@@ -1,5 +1,4 @@
-from pydub import AudioSegment
-from pydub.playback import play
+import pyaudio
 import socket
 import sys
 import threading
@@ -15,21 +14,37 @@ def send_request_to_server(request, host="localhost", port=5000):
         print(f"Error communicating with server: {e}")
         return None
 
-def get_song():
-    f = open(f"data/{title}/{title}_recv.mp3", "wb")
-    for i in range(2662):
-        response = send_request_to_server(f"{title}, {i}")
-        f.write(response)
+def stream_wav():
+    for i in range(size):
+        response = send_request_to_server(f'{title}, {i}')
+        chunks.append(response)
 
 if __name__ == "__main__":
     # if len(sys.argv) < 2:
     #     print("Usage: ")
     #     sys.exit(1)
     
-    title = "song_2"
-    # thread = threading.Thread(target=get_song)
-    # thread.start()
-    song = AudioSegment.from_mp3("data/song_2/song_2_recv.mp3")     
-    play(song)
+    title = 'sharpest_lives'
+    repsonse = send_request_to_server(f'{title}, SPLIT')
+    size = int.from_bytes(repsonse, 'big')
 
+    chunks = []
+    thread = threading.Thread(target=stream_wav)
+    thread.start()
+
+    p = pyaudio.PyAudio()
+
+    stream = p.open(format=p.get_format_from_width(2),
+                    channels=2,
+                    rate=48000,
+                    output=True)
+
+    print(f'\n\n\n\n\n\n\n\n\n\nNow listening to: {title}')
+
+    for i in range(size):
+        data = chunks[i]
+        stream.write(data)
     
+    stream.stop_stream()
+    stream.close()
+    p.terminate()

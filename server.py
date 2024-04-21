@@ -1,6 +1,7 @@
 import socket
 import threading
 from os import path
+from stream import split_wav
 
 def handle_client(conn, base_path):
     with conn:
@@ -9,20 +10,23 @@ def handle_client(conn, base_path):
         print(f"{request}")
         args = request.split(', ')
         title = args[0]
-        packet = args[1]
+        cmd = args[1]
 
-        file_path = f"data/{title}"
+        file_path = f"data/{title}.wav"
 
         if not path.exists(file_path):
             response = f"ERROR: {title} is not available"
             conn.sendall(response)
             return
-        
-        response = b''
-        f = open(f"{file_path}/{title}_chunks/{title}_{packet}.mp3", "rb")
-        for data in f:
-            response += data
 
+        if cmd == "SPLIT":
+            global chunks
+            chunks = split_wav(file_path)
+            l = len(chunks)
+            response = l.to_bytes(2, "big")
+        else:
+            response = chunks[int(cmd)]
+        
         conn.sendall(response)
 
 def start_server(host='localhost', port=5000, base_path='.'):
