@@ -14,3 +14,8 @@ def split_wav(path):
 
                 chunks.append(chunk)
         return chunks
+    
+def get_params(path):
+    f = wave.open(path, 'rb')
+    return f.getparams()
+       

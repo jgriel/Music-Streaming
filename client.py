@@ -3,7 +3,7 @@ import socket
 import sys
 import threading
 
-def send_request_to_server(request, host="localhost", port=5000):
+def send_request_to_server(request, host="localhost", port=5001):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.connect((host, port))
@@ -20,13 +20,21 @@ def stream_wav():
         chunks.append(response)
 
 if __name__ == "__main__":
-    # if len(sys.argv) < 2:
-    #     print("Usage: ")
-    #     sys.exit(1)
+    if len(sys.argv) < 2:
+        print("Usage: client.py <song_title>")
+        sys.exit(1)
     
-    title = 'sharpest_lives'
-    repsonse = send_request_to_server(f'{title}, SPLIT')
-    size = int.from_bytes(repsonse, 'big')
+    title = sys.argv[1]
+    
+    response = send_request_to_server(f'{title}, PARAMS').decode('utf-8')
+    if response[:5] == 'ERROR':
+        print(response)
+        sys.exit(1)
+
+    params = response.split(', ')
+    
+    response = send_request_to_server(f'{title}, SPLIT')
+    size = int.from_bytes(response, 'big')
 
     chunks = []
     thread = threading.Thread(target=stream_wav)
@@ -34,9 +42,9 @@ if __name__ == "__main__":
 
     p = pyaudio.PyAudio()
 
-    stream = p.open(format=p.get_format_from_width(2),
-                    channels=2,
-                    rate=48000,
+    stream = p.open(format=p.get_format_from_width(int(params[0])),
+                    channels=int(params[1]),
+                    rate=int(params[2]),
                     output=True)
 
     print(f'\n\n\n\n\n\n\n\n\n\nNow listening to: {title}')
