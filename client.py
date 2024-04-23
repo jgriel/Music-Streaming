@@ -6,18 +6,37 @@ import threading
 def send_request_to_server(request, host="localhost", port=5001):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(5)
             s.connect((host, port))
             s.sendall(request.encode())
             response = s.recv(1024)
             return response
+    except socket.timeout:
+        print(f'Request {request} timed out')
+        return None
     except Exception as e:
         print(f"Error communicating with server: {e}")
         return None
 
 def stream_wav():
-    for i in range(size):
-        response = send_request_to_server(f'{title}, {i}')
-        chunks.append(response)
+    dropped_packets = []
+    i = 0
+    print(len(chunks))
+
+    while len(chunks) < size or len(dropped_packets) != 0:
+        packet = i
+        if len(dropped_packets) != 0:
+            packet = dropped_packets[0]
+            del dropped_packets[0]
+
+        response = send_request_to_server(f'{title}, {packet}')
+
+        if response == b'':
+            dropped_packets.append(packet)
+            print(f'packet {packet} dropped')
+        else:
+            chunks[packet] = response
+            i += 1 
 
 if __name__ == "__main__":
     if len(sys.argv) < 2:
@@ -36,7 +55,7 @@ if __name__ == "__main__":
     response = send_request_to_server(f'{title}, SPLIT')
     size = int.from_bytes(response, 'big')
 
-    chunks = []
+    chunks = {}
     thread = threading.Thread(target=stream_wav)
     thread.start()
 

@@ -1,5 +1,6 @@
 import socket
 import threading
+import random
 from os import path
 from stream import split_wav, get_params
 
@@ -29,6 +30,8 @@ def handle_client(conn, base_path):
             response = bytes(p_str, 'utf-8')
 
         else:
+            if random.random() < .1:
+                return None
             response = chunks[int(cmd)]
         
         conn.sendall(response)
