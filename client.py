@@ -2,8 +2,9 @@ import pyaudio
 import socket
 import sys
 import threading
+from time import sleep
 
-def send_request_to_server(request, host="localhost", port=5001):
+def send_request_to_server(request, host="172.233.74.25", port=5000):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(5)
@@ -18,16 +19,19 @@ def send_request_to_server(request, host="localhost", port=5001):
         print(f"Error communicating with server: {e}")
         return None
 
-def stream_wav():
+
+def stream_wav(thread_num, thread_count):
     dropped_packets = []
-    i = 0
-    print(len(chunks))
+    i = thread_num
 
     while len(chunks) < size or len(dropped_packets) != 0:
         packet = i
         if len(dropped_packets) != 0:
             packet = dropped_packets[0]
             del dropped_packets[0]
+
+        if packet >= size:
+            break
 
         response = send_request_to_server(f'{title}, {packet}')
 
@@ -36,11 +40,12 @@ def stream_wav():
             print(f'packet {packet} dropped')
         else:
             chunks[packet] = response
-            i += 1 
+            i += thread_count
+
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        print("Usage: client.py <song_title>")
+    if len(sys.argv) < 3:
+        print("Usage: client.py <song_title> <threads>")
         sys.exit(1)
     
     title = sys.argv[1]
@@ -55,9 +60,12 @@ if __name__ == "__main__":
     response = send_request_to_server(f'{title}, SPLIT')
     size = int.from_bytes(response, 'big')
 
+    global chunks
     chunks = {}
-    thread = threading.Thread(target=stream_wav)
-    thread.start()
+    t = int(sys.argv[2])
+    for i in range(t):
+        thread = threading.Thread(target=stream_wav, args=[i, t])
+        thread.start()
 
     p = pyaudio.PyAudio()
 
@@ -69,6 +77,10 @@ if __name__ == "__main__":
     print(f'\n\n\n\n\n\n\n\n\n\nNow listening to: {title}')
 
     for i in range(size):
+        while i not in chunks.keys():
+            print('Buffering...')
+            sleep(1)
+            continue
         data = chunks[i]
         stream.write(data)
     

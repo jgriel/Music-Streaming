@@ -1,6 +1,5 @@
 import socket
 import threading
-import random
 from os import path
 from stream import split_wav, get_params
 
