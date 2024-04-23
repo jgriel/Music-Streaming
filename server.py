@@ -30,8 +30,6 @@ def handle_client(conn, base_path):
             response = bytes(p_str, 'utf-8')
 
         else:
-            if random.random() < .1:
-                return None
             response = chunks[int(cmd)]
         
         conn.sendall(response)
