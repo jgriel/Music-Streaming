@@ -4,7 +4,7 @@ import sys
 import threading
 from time import sleep
 
-def send_request_to_server(request, host="172.233.74.25", port=5000):
+def send_request_to_server(request, host="localhost", port=5000):
     try:
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             s.settimeout(5)
