@@ -33,7 +33,7 @@ def handle_client(conn, base_path):
         
         conn.sendall(response)
 
-def start_server(host='localhost', port=5001, base_path='.'):
+def start_server(host='localhost', port=5000, base_path='.'):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((host, port))
         s.listen()
